@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "github.com/anibalox/Distribuidos3";
+
+
+
+message DatosBase{
+	string sector = 1;
+	string nombre = 2;
+}
+
+message Peticion{
+	DatosBase Base = 1;
+	string valor = 2;
+}
+
+message Direccion{
+	string DireccionServidor = 1;
+}
+
+message Reloj{
+	string RelojServidor = 1;
+}
+
+message SoldadosBase{
+	int32 CantidadSoldados = 1;
+	string RelojServidor = 2;
+	string NombreServidor = 3;
+}
+
+
+
+service BrokerRasputin{
+	rpc AgregarBase(Peticion) returns (Direccion);
+	rpc RenombrarBase(Peticion) returns (Direccion);
+	rpc ActualizarValor(Peticion) returns (Direccion);
+	rpc BorrarBase(Peticion) returns (Direccion);
+	rpc GetSoldados(DatosBase) returns (SoldadosBase);
+}
+
+service ServidorPlanetario {
+	rpc AgregarBase(Peticion) returns (Reloj);
+	rpc RenombrarBase(Peticion) returns (Reloj);
+	rpc ActualizarValor(Peticion) returns (Reloj);
+	rpc BorrarBase(Peticion) returns (Reloj);
+}
