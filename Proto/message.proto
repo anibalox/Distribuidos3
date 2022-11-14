@@ -31,13 +31,19 @@ message SoldadosBase{
 }
 
 
+message MensajeMerge{
+	Reloj RelojServidor = 1;
+	string Logs = 2;
+}
+
+message MensajeSimple {
+	string valor = 1;
+}
 
 service BrokerRasputin{
-	rpc AgregarBase(Peticion) returns (Direccion);
-	rpc RenombrarBase(Peticion) returns (Direccion);
-	rpc ActualizarValor(Peticion) returns (Direccion);
-	rpc BorrarBase(Peticion) returns (Direccion);
+	rpc DerivarConsulta(MensajeSimple) returns (Direccion);
 	rpc GetSoldados(DatosBase) returns (SoldadosBase);
+	rpc Finalizar(MensajeSimple) returns (MensajeSimple);
 }
 
 service ServidorPlanetario {
@@ -45,4 +51,8 @@ service ServidorPlanetario {
 	rpc RenombrarBase(Peticion) returns (Reloj);
 	rpc ActualizarValor(Peticion) returns (Reloj);
 	rpc BorrarBase(Peticion) returns (Reloj);
+	rpc Merge(MensajeMerge) returns (MensajeMerge);
+	rpc GetSoldados(DatosBase) returns (SoldadosBase);
+	rpc IniciarMerge(MensajeSimple) returns (MensajeSimple);
+	rpc Finalizar(MensajeSimple) returns (MensajeSimple);
 }

@@ -1,13 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"math/rand"
 	"net"
 	"os"
 	"strconv"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"context"
 
@@ -18,29 +18,65 @@ type server struct {
 	pb.UnimplementedBrokerRasputinServer
 }
 
-var reloj [3]int = [3]int{0, 0, 0}
-var nroServidor int
+var numberToIp = map[string]string{
+	"1": "10003",    //Colocar IP de Tierra
+	"2": "100002",   // IP de Titan
+	"3": "23231231", // IP Marte
+}
 
-func (s *server) AgregarBase(context.Context, *pb.Peticion) (*pb.Direccion, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AgregarBase not implemented")
+func randomNumber(max int, min int) int {
+	return rand.Intn(max-min) + min
 }
-func (s *server) RenombrarBase(context.Context, *pb.Peticion) (*pb.Direccion, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RenombrarBase not implemented")
+
+func (s *server) DerivarConsulta(ctx context.Context, req *pb.MensajeSimple) (*pb.Direccion, error) {
+	return &pb.Direccion{DireccionServidor: numberToIp[strconv.Itoa(randomNumber(4, 1))]}, nil
 }
-func (s *server) ActualizarValor(context.Context, *pb.Peticion) (*pb.Direccion, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ActualizarValor not implemented")
+func (s *server) GetSoldados(ctx context.Context, req *pb.DatosBase) (*pb.SoldadosBase, error) {
+
+	nroServer := strconv.Itoa(randomNumber(4, 1))
+	connS, err := grpc.Dial(numberToIp[nroServer], grpc.WithInsecure())
+
+	fmt.Println("Se inicio conexion con " + nroServer + " Esperando respuesta...")
+
+	if err != nil {
+		panic("cannot create tcp connection" + err.Error())
+	}
+	serviceCliente := pb.NewServidorPlanetarioClient(connS)
+
+	res, _ := serviceCliente.GetSoldados(context.Background(), req)
+
+	defer connS.Close()
+
+	fmt.Println("Llego respuestas. Cerrando conexion")
+
+	return res, nil
 }
-func (s *server) BorrarBase(context.Context, *pb.Peticion) (*pb.Direccion, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BorrarBase not implemented")
-}
-func (s *server) GetSoldados(context.Context, *pb.DatosBase) (*pb.SoldadosBase, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSoldados not implemented")
+func (s *server) Finalizar(ctx context.Context, req *pb.MensajeSimple) (*pb.MensajeSimple, error) {
+
+	defer os.Exit(1)
+	fmt.Println("Llego senal termino. Enviando senal de termino a todos los servidores...")
+
+	for nroServidor, direccionServidorPlanetario := range numberToIp { //Se itera sobre numberToIp
+		connS, err := grpc.Dial(direccionServidorPlanetario, grpc.WithInsecure())
+		if err != nil {
+			panic("cannot create tcp connection" + err.Error())
+		}
+		serviceCliente := pb.NewServidorPlanetarioClient(connS)
+
+		serviceCliente.Finalizar(context.Background(), &pb.MensajeSimple{Valor: "1"})
+
+		fmt.Println("Se finalizo servidor planetario: " + nroServidor)
+
+		connS.Close()
+	}
+	fmt.Println("Se finalizaron todos los servidores. Cerrando Broker Rasputin")
+
+	return &pb.MensajeSimple{Valor: "1"}, nil
 }
 
 func main() {
 
-	nroServidor, _ = strconv.Atoi(os.Args[1]) //1: Tierra , 2: Titan, 3: Marte Le puedes dar un numero Felipe?
-	port := ":50051"                          // Puerto de DataNode
+	port := ":50051" // Dale el puerto que te sirva
 
 	listner, err := net.Listen("tcp", port)
 

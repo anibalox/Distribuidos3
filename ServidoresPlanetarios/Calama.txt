@@ -1,0 +1,3 @@
+Calama Base1 50000
+Calama Base2 90
+Calama BaseNueva 1700

@@ -22,11 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BrokerRasputinClient interface {
-	AgregarBase(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Direccion, error)
-	RenombrarBase(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Direccion, error)
-	ActualizarValor(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Direccion, error)
-	BorrarBase(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Direccion, error)
+	DerivarConsulta(ctx context.Context, in *MensajeSimple, opts ...grpc.CallOption) (*Direccion, error)
 	GetSoldados(ctx context.Context, in *DatosBase, opts ...grpc.CallOption) (*SoldadosBase, error)
+	Finalizar(ctx context.Context, in *MensajeSimple, opts ...grpc.CallOption) (*MensajeSimple, error)
 }
 
 type brokerRasputinClient struct {
@@ -37,36 +35,9 @@ func NewBrokerRasputinClient(cc grpc.ClientConnInterface) BrokerRasputinClient {
 	return &brokerRasputinClient{cc}
 }
 
-func (c *brokerRasputinClient) AgregarBase(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Direccion, error) {
+func (c *brokerRasputinClient) DerivarConsulta(ctx context.Context, in *MensajeSimple, opts ...grpc.CallOption) (*Direccion, error) {
 	out := new(Direccion)
-	err := c.cc.Invoke(ctx, "/grpc.BrokerRasputin/AgregarBase", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *brokerRasputinClient) RenombrarBase(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Direccion, error) {
-	out := new(Direccion)
-	err := c.cc.Invoke(ctx, "/grpc.BrokerRasputin/RenombrarBase", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *brokerRasputinClient) ActualizarValor(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Direccion, error) {
-	out := new(Direccion)
-	err := c.cc.Invoke(ctx, "/grpc.BrokerRasputin/ActualizarValor", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *brokerRasputinClient) BorrarBase(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Direccion, error) {
-	out := new(Direccion)
-	err := c.cc.Invoke(ctx, "/grpc.BrokerRasputin/BorrarBase", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.BrokerRasputin/DerivarConsulta", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,15 +53,22 @@ func (c *brokerRasputinClient) GetSoldados(ctx context.Context, in *DatosBase, o
 	return out, nil
 }
 
+func (c *brokerRasputinClient) Finalizar(ctx context.Context, in *MensajeSimple, opts ...grpc.CallOption) (*MensajeSimple, error) {
+	out := new(MensajeSimple)
+	err := c.cc.Invoke(ctx, "/grpc.BrokerRasputin/Finalizar", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BrokerRasputinServer is the server API for BrokerRasputin service.
 // All implementations must embed UnimplementedBrokerRasputinServer
 // for forward compatibility
 type BrokerRasputinServer interface {
-	AgregarBase(context.Context, *Peticion) (*Direccion, error)
-	RenombrarBase(context.Context, *Peticion) (*Direccion, error)
-	ActualizarValor(context.Context, *Peticion) (*Direccion, error)
-	BorrarBase(context.Context, *Peticion) (*Direccion, error)
+	DerivarConsulta(context.Context, *MensajeSimple) (*Direccion, error)
 	GetSoldados(context.Context, *DatosBase) (*SoldadosBase, error)
+	Finalizar(context.Context, *MensajeSimple) (*MensajeSimple, error)
 	mustEmbedUnimplementedBrokerRasputinServer()
 }
 
@@ -98,20 +76,14 @@ type BrokerRasputinServer interface {
 type UnimplementedBrokerRasputinServer struct {
 }
 
-func (UnimplementedBrokerRasputinServer) AgregarBase(context.Context, *Peticion) (*Direccion, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AgregarBase not implemented")
-}
-func (UnimplementedBrokerRasputinServer) RenombrarBase(context.Context, *Peticion) (*Direccion, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RenombrarBase not implemented")
-}
-func (UnimplementedBrokerRasputinServer) ActualizarValor(context.Context, *Peticion) (*Direccion, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ActualizarValor not implemented")
-}
-func (UnimplementedBrokerRasputinServer) BorrarBase(context.Context, *Peticion) (*Direccion, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BorrarBase not implemented")
+func (UnimplementedBrokerRasputinServer) DerivarConsulta(context.Context, *MensajeSimple) (*Direccion, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DerivarConsulta not implemented")
 }
 func (UnimplementedBrokerRasputinServer) GetSoldados(context.Context, *DatosBase) (*SoldadosBase, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSoldados not implemented")
+}
+func (UnimplementedBrokerRasputinServer) Finalizar(context.Context, *MensajeSimple) (*MensajeSimple, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Finalizar not implemented")
 }
 func (UnimplementedBrokerRasputinServer) mustEmbedUnimplementedBrokerRasputinServer() {}
 
@@ -126,74 +98,20 @@ func RegisterBrokerRasputinServer(s grpc.ServiceRegistrar, srv BrokerRasputinSer
 	s.RegisterService(&BrokerRasputin_ServiceDesc, srv)
 }
 
-func _BrokerRasputin_AgregarBase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Peticion)
+func _BrokerRasputin_DerivarConsulta_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MensajeSimple)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BrokerRasputinServer).AgregarBase(ctx, in)
+		return srv.(BrokerRasputinServer).DerivarConsulta(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.BrokerRasputin/AgregarBase",
+		FullMethod: "/grpc.BrokerRasputin/DerivarConsulta",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BrokerRasputinServer).AgregarBase(ctx, req.(*Peticion))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _BrokerRasputin_RenombrarBase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Peticion)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(BrokerRasputinServer).RenombrarBase(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc.BrokerRasputin/RenombrarBase",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BrokerRasputinServer).RenombrarBase(ctx, req.(*Peticion))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _BrokerRasputin_ActualizarValor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Peticion)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(BrokerRasputinServer).ActualizarValor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc.BrokerRasputin/ActualizarValor",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BrokerRasputinServer).ActualizarValor(ctx, req.(*Peticion))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _BrokerRasputin_BorrarBase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Peticion)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(BrokerRasputinServer).BorrarBase(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc.BrokerRasputin/BorrarBase",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BrokerRasputinServer).BorrarBase(ctx, req.(*Peticion))
+		return srv.(BrokerRasputinServer).DerivarConsulta(ctx, req.(*MensajeSimple))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -216,6 +134,24 @@ func _BrokerRasputin_GetSoldados_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BrokerRasputin_Finalizar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MensajeSimple)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BrokerRasputinServer).Finalizar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.BrokerRasputin/Finalizar",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BrokerRasputinServer).Finalizar(ctx, req.(*MensajeSimple))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BrokerRasputin_ServiceDesc is the grpc.ServiceDesc for BrokerRasputin service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -224,24 +160,16 @@ var BrokerRasputin_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*BrokerRasputinServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AgregarBase",
-			Handler:    _BrokerRasputin_AgregarBase_Handler,
-		},
-		{
-			MethodName: "RenombrarBase",
-			Handler:    _BrokerRasputin_RenombrarBase_Handler,
-		},
-		{
-			MethodName: "ActualizarValor",
-			Handler:    _BrokerRasputin_ActualizarValor_Handler,
-		},
-		{
-			MethodName: "BorrarBase",
-			Handler:    _BrokerRasputin_BorrarBase_Handler,
+			MethodName: "DerivarConsulta",
+			Handler:    _BrokerRasputin_DerivarConsulta_Handler,
 		},
 		{
 			MethodName: "GetSoldados",
 			Handler:    _BrokerRasputin_GetSoldados_Handler,
+		},
+		{
+			MethodName: "Finalizar",
+			Handler:    _BrokerRasputin_Finalizar_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -256,6 +184,10 @@ type ServidorPlanetarioClient interface {
 	RenombrarBase(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Reloj, error)
 	ActualizarValor(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Reloj, error)
 	BorrarBase(ctx context.Context, in *Peticion, opts ...grpc.CallOption) (*Reloj, error)
+	Merge(ctx context.Context, in *MensajeMerge, opts ...grpc.CallOption) (*MensajeMerge, error)
+	GetSoldados(ctx context.Context, in *DatosBase, opts ...grpc.CallOption) (*SoldadosBase, error)
+	IniciarMerge(ctx context.Context, in *MensajeSimple, opts ...grpc.CallOption) (*MensajeSimple, error)
+	Finalizar(ctx context.Context, in *MensajeSimple, opts ...grpc.CallOption) (*MensajeSimple, error)
 }
 
 type servidorPlanetarioClient struct {
@@ -302,6 +234,42 @@ func (c *servidorPlanetarioClient) BorrarBase(ctx context.Context, in *Peticion,
 	return out, nil
 }
 
+func (c *servidorPlanetarioClient) Merge(ctx context.Context, in *MensajeMerge, opts ...grpc.CallOption) (*MensajeMerge, error) {
+	out := new(MensajeMerge)
+	err := c.cc.Invoke(ctx, "/grpc.ServidorPlanetario/Merge", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *servidorPlanetarioClient) GetSoldados(ctx context.Context, in *DatosBase, opts ...grpc.CallOption) (*SoldadosBase, error) {
+	out := new(SoldadosBase)
+	err := c.cc.Invoke(ctx, "/grpc.ServidorPlanetario/GetSoldados", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *servidorPlanetarioClient) IniciarMerge(ctx context.Context, in *MensajeSimple, opts ...grpc.CallOption) (*MensajeSimple, error) {
+	out := new(MensajeSimple)
+	err := c.cc.Invoke(ctx, "/grpc.ServidorPlanetario/IniciarMerge", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *servidorPlanetarioClient) Finalizar(ctx context.Context, in *MensajeSimple, opts ...grpc.CallOption) (*MensajeSimple, error) {
+	out := new(MensajeSimple)
+	err := c.cc.Invoke(ctx, "/grpc.ServidorPlanetario/Finalizar", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServidorPlanetarioServer is the server API for ServidorPlanetario service.
 // All implementations must embed UnimplementedServidorPlanetarioServer
 // for forward compatibility
@@ -310,6 +278,10 @@ type ServidorPlanetarioServer interface {
 	RenombrarBase(context.Context, *Peticion) (*Reloj, error)
 	ActualizarValor(context.Context, *Peticion) (*Reloj, error)
 	BorrarBase(context.Context, *Peticion) (*Reloj, error)
+	Merge(context.Context, *MensajeMerge) (*MensajeMerge, error)
+	GetSoldados(context.Context, *DatosBase) (*SoldadosBase, error)
+	IniciarMerge(context.Context, *MensajeSimple) (*MensajeSimple, error)
+	Finalizar(context.Context, *MensajeSimple) (*MensajeSimple, error)
 	mustEmbedUnimplementedServidorPlanetarioServer()
 }
 
@@ -328,6 +300,18 @@ func (UnimplementedServidorPlanetarioServer) ActualizarValor(context.Context, *P
 }
 func (UnimplementedServidorPlanetarioServer) BorrarBase(context.Context, *Peticion) (*Reloj, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BorrarBase not implemented")
+}
+func (UnimplementedServidorPlanetarioServer) Merge(context.Context, *MensajeMerge) (*MensajeMerge, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Merge not implemented")
+}
+func (UnimplementedServidorPlanetarioServer) GetSoldados(context.Context, *DatosBase) (*SoldadosBase, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSoldados not implemented")
+}
+func (UnimplementedServidorPlanetarioServer) IniciarMerge(context.Context, *MensajeSimple) (*MensajeSimple, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IniciarMerge not implemented")
+}
+func (UnimplementedServidorPlanetarioServer) Finalizar(context.Context, *MensajeSimple) (*MensajeSimple, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Finalizar not implemented")
 }
 func (UnimplementedServidorPlanetarioServer) mustEmbedUnimplementedServidorPlanetarioServer() {}
 
@@ -414,6 +398,78 @@ func _ServidorPlanetario_BorrarBase_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServidorPlanetario_Merge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MensajeMerge)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServidorPlanetarioServer).Merge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.ServidorPlanetario/Merge",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServidorPlanetarioServer).Merge(ctx, req.(*MensajeMerge))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServidorPlanetario_GetSoldados_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DatosBase)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServidorPlanetarioServer).GetSoldados(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.ServidorPlanetario/GetSoldados",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServidorPlanetarioServer).GetSoldados(ctx, req.(*DatosBase))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServidorPlanetario_IniciarMerge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MensajeSimple)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServidorPlanetarioServer).IniciarMerge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.ServidorPlanetario/IniciarMerge",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServidorPlanetarioServer).IniciarMerge(ctx, req.(*MensajeSimple))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServidorPlanetario_Finalizar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MensajeSimple)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServidorPlanetarioServer).Finalizar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.ServidorPlanetario/Finalizar",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServidorPlanetarioServer).Finalizar(ctx, req.(*MensajeSimple))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ServidorPlanetario_ServiceDesc is the grpc.ServiceDesc for ServidorPlanetario service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -436,6 +492,22 @@ var ServidorPlanetario_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BorrarBase",
 			Handler:    _ServidorPlanetario_BorrarBase_Handler,
+		},
+		{
+			MethodName: "Merge",
+			Handler:    _ServidorPlanetario_Merge_Handler,
+		},
+		{
+			MethodName: "GetSoldados",
+			Handler:    _ServidorPlanetario_GetSoldados_Handler,
+		},
+		{
+			MethodName: "IniciarMerge",
+			Handler:    _ServidorPlanetario_IniciarMerge_Handler,
+		},
+		{
+			MethodName: "Finalizar",
+			Handler:    _ServidorPlanetario_Finalizar_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

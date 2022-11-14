@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -26,25 +24,21 @@ type server struct {
 var reloj [3]int = [3]int{0, 0, 0}
 var nroServidor int
 
+var numberToIp = map[int]string{
+	0: "10003",    //Colocar IP de Tierra
+	1: "100002",   // IP de Titan
+	2: "23231231", // IP Marte
+}
+
 func (s *server) AgregarBase(ctx context.Context, req *pb.Peticion) (*pb.Reloj, error) {
 
 	nombreSector := req.Base.Sector
 	nombreBase := req.Base.Nombre
 	cantidadSoldados := req.Valor
 
-	//Creamos y/o abrimos el .txt correspodiente
-	file, err := os.OpenFile(nombreSector+".txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
+	agregarBase(nombreSector, nombreBase, cantidadSoldados)
 
-	//Guardamos la informacion en SECTOR.txt
-	file.WriteString(nombreSector + " " + nombreBase + " " + cantidadSoldados + "\n")
-
-	//Cerramos el archivo
-	file.Close()
-
-	file, err = os.OpenFile("LogRegistro.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644) //Abrimos el Log de registros para anadir el cambio
+	file, err := os.OpenFile("LogRegistro.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644) //Abrimos el Log de registros para anadir el cambio
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,49 +56,15 @@ func (s *server) AgregarBase(ctx context.Context, req *pb.Peticion) (*pb.Reloj, 
 	return &pb.Reloj{RelojServidor: stringReloj}, nil
 }
 
-//Hay que ver si esto funciona
 func (s *server) RenombrarBase(ctx context.Context, req *pb.Peticion) (*pb.Reloj, error) {
-
-	var partes []string
-	var linea string
-	var lineaCambiar string
-	var nuevaLinea string
 
 	nombreSector := req.Base.Sector
 	nombreBase := req.Base.Nombre
 	nuevoNombre := req.Valor
 
-	file, err := os.Open(nombreSector + ".txt")
-	if err != nil {
-		log.Fatal(err)
-	}
+	renombrarBase(nombreSector, nombreBase, nuevoNombre)
 
-	scanner := bufio.NewScanner(file)
-	//Buscar en el archivo linea a reemplazar
-	for scanner.Scan() {
-		linea = scanner.Text()
-		partes = strings.Split(linea, " ")
-		if partes[1] == nombreBase {
-			lineaCambiar = linea
-			nuevaLinea = partes[0] + " " + nuevoNombre + " " + partes[2]
-			break
-		}
-	}
-
-	file.Close()
-
-	input, err := ioutil.ReadFile(nombreSector + ".txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	output := bytes.Replace(input, []byte(lineaCambiar), []byte(nuevaLinea), -1)
-
-	if err = ioutil.WriteFile(nombreSector+".txt", output, 0666); err != nil {
-		log.Fatal(err)
-	}
-
-	file, err = os.OpenFile("LogRegistro.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644) //Abrimos el Log de registros para anadir el cambio
+	file, err := os.OpenFile("LogRegistro.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644) //Abrimos el Log de registros para anadir el cambio
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,48 +81,16 @@ func (s *server) RenombrarBase(ctx context.Context, req *pb.Peticion) (*pb.Reloj
 
 	return &pb.Reloj{RelojServidor: stringReloj}, nil
 }
+
 func (s *server) ActualizarValor(ctx context.Context, req *pb.Peticion) (*pb.Reloj, error) {
-	var partes []string
-	var linea string
-	var lineaCambiar string
-	var nuevaLinea string
 
 	nombreSector := req.Base.Sector
 	nombreBase := req.Base.Nombre
 	nuevoSoldados := req.Valor
 
-	file, err := os.Open(nombreSector + ".txt")
-	if err != nil {
-		log.Fatal(err)
-	}
+	actualizarValor(nombreSector, nombreBase, nuevoSoldados)
 
-	scanner := bufio.NewScanner(file)
-	//Buscar en el archivo linea a reemplazar
-	for scanner.Scan() {
-		linea = scanner.Text()
-		partes = strings.Split(linea, " ")
-		if partes[1] == nombreBase {
-			lineaCambiar = linea
-			nuevaLinea = partes[0] + " " + partes[1] + " " + nuevoSoldados
-			break
-		}
-	}
-
-	file.Close()
-
-	//Reemplazamos linea
-	input, err := ioutil.ReadFile(nombreSector + ".txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	output := bytes.Replace(input, []byte(lineaCambiar), []byte(nuevaLinea), -1)
-
-	if err = ioutil.WriteFile(nombreSector+".txt", output, 0666); err != nil {
-		log.Fatal(err)
-	}
-
-	file, err = os.OpenFile("LogRegistro.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644) //Abrimos el Log de registros para anadir el cambio
+	file, err := os.OpenFile("LogRegistro.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644) //Abrimos el Log de registros para anadir el cambio
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -184,10 +112,122 @@ func (s *server) BorrarBase(ctx context.Context, req *pb.Peticion) (*pb.Reloj, e
 	return nil, status.Errorf(codes.Unimplemented, "method BorrarBase not implemented")
 }
 
+func (s *server) GetSoldados(ctx context.Context, req *pb.DatosBase) (*pb.SoldadosBase, error) {
+
+	return nil, status.Errorf(codes.Unimplemented, "method GetSoldados not implemented")
+}
+
+func traducirReloj(reloj string) [3]int {
+
+	var nuevoReloj [3]int
+
+	datos := strings.Split(reloj, "-")
+
+	for i := 0; i < 3; i++ {
+		nuevoReloj[i], _ = strconv.Atoi(datos[i])
+	}
+
+	return nuevoReloj
+}
+
+func (s *server) IniciarMerge(context.Context, *pb.MensajeSimple) (*pb.MensajeSimple, error) {
+
+	//Este codigo obtiene la informacion de los otros servidores y actualiza la propia
+	for nroServ, direccionServidorPlanetario := range numberToIp { //Se itera sobre numberToIp
+		if nroServ != nroServidor {
+			connS, err := grpc.Dial(direccionServidorPlanetario, grpc.WithInsecure())
+			if err != nil {
+				panic("cannot create tcp connection" + err.Error())
+			}
+			serviceCliente := pb.NewServidorPlanetarioClient(connS)
+
+			res, _ := serviceCliente.Merge(context.Background(), &pb.MensajeMerge{
+				RelojServidor: &pb.Reloj{RelojServidor: ""},
+				Logs:          "",
+			})
+
+			//Calculamos cuantos logs inicialmente habia
+			cantidadInicialLogs := reloj[nroServ]
+
+			//Actualizamos el reloj
+			reloj[nroServ] = traducirReloj(res.RelojServidor.RelojServidor)[nroServ]
+
+			//Aplicamos los cambios a el servidor actual
+			aplicarCambios("LogRegistro.txt", res.Logs, cantidadInicialLogs)
+
+			connS.Close()
+		}
+	}
+
+	//Este codigo propaga los cambios
+	for nroServ, direccionServidorPlanetario := range numberToIp { //Se itera sobre numberToIp
+		if nroServ != nroServidor {
+			connS, err := grpc.Dial(direccionServidorPlanetario, grpc.WithInsecure())
+			if err != nil {
+				panic("cannot create tcp connection" + err.Error())
+			}
+			serviceCliente := pb.NewServidorPlanetarioClient(connS)
+
+			stringReloj := strconv.Itoa(reloj[0]) + "-" + strconv.Itoa(reloj[1]) + "-" + strconv.Itoa(reloj[2])
+			contenido, err := os.ReadFile("LogRegistro.txt")
+
+			serviceCliente.Merge(context.Background(), &pb.MensajeMerge{
+				RelojServidor: &pb.Reloj{RelojServidor: stringReloj},
+				Logs:          string(contenido),
+			})
+
+			connS.Close()
+		}
+	}
+
+	return nil, status.Errorf(codes.Unimplemented, "method IniciarMerge not implemented")
+}
+
+func (s *server) Merge(ctx context.Context, req *pb.MensajeMerge) (*pb.MensajeMerge, error) {
+
+	if req.Logs == "" { //Si Logs es vacio, significa que se le pide los logs y los relojes
+
+		//Se crea reloj y contenido para enviar los datos al servidor dominante
+		stringReloj := strconv.Itoa(reloj[0]) + "-" + strconv.Itoa(reloj[1]) + "-" + strconv.Itoa(reloj[2])
+		contenido, err := os.ReadFile("LogRegistro.txt")
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		return &pb.MensajeMerge{RelojServidor: &pb.Reloj{RelojServidor: stringReloj}, Logs: string(contenido)}, nil
+
+	} else { // Si no los es, significa que se tiene que actualizar el propio Logs
+
+		//Calculamos cuantos logs inicialmente habia
+		cantidadInicialLogs := reloj[0] + reloj[1] + reloj[2]
+
+		//Actualizamos el reloj
+		reloj = traducirReloj(req.RelojServidor.RelojServidor)
+
+		//Aplicamos los cambios a el servidor actual
+		aplicarCambios("LogRegistro.txt", req.Logs, cantidadInicialLogs)
+
+		return nil, nil
+	}
+
+}
+func (s *server) Finalizar(ctx context.Context, req *pb.MensajeSimple) (*pb.MensajeSimple, error) {
+	fmt.Println("Llego senal termino, cerrando servidor...")
+	defer os.Exit(1)
+	return &pb.MensajeSimple{Valor: "1"}, nil
+}
+
 func main() {
 
-	nroServidor, _ = strconv.Atoi(os.Args[1]) //1: Tierra , 2: Titan, 3: Marte Le puedes dar un numero Felipe?
-	port := ":50051"                          // Puerto de DataNode
+	//FALTA IMPLEMENTAR BORRAR BASE
+
+	//Por mientras, dale el nroServidor a mano. 0: Tierra, 1: Titan, 2: Marte
+	//Copialo en diferentes carpetas y pruebalo.
+	//Tienes tambien que darle el puerto a los servers a mano. Ve tu cual a cual.
+	//Ademas, cambia la var numberToIp que esta al principio pa ponerle
+	//las direcciones que vas a usar por mientras.
+	nroServidor = 0
+	port := ":50051" // Puerto de DataNode
 
 	listner, err := net.Listen("tcp", port)
 
@@ -197,6 +237,8 @@ func main() {
 
 	serv := grpc.NewServer()
 	pb.RegisterServidorPlanetarioServer(serv, &server{})
+
+	//FALTA AGREGAR GO FUNCTION PARA HACER MERGE CADA 1 MIN
 
 	if err = serv.Serve(listner); err != nil {
 		panic("cannot initialize the server" + err.Error())
