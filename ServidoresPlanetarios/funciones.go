@@ -1,7 +1,6 @@
 package main
 
 import (
-	pb "Tarea3/Proto"
 	"bufio"
 	"bytes"
 	"io/ioutil"
@@ -103,8 +102,40 @@ func actualizarValor(nombreSector string, nombreBase string, nuevoSoldados strin
 
 }
 
-func borrarBase(req *pb.Peticion) {
+func borrarBase(nombreSector string, nombreBase string) {
+	var partes []string
+	var linea string
+	var lineaCambiar string
 
+	file, err := os.Open(nombreSector + ".txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	scanner := bufio.NewScanner(file)
+	//Buscar en el archivo linea a reemplazar
+	for scanner.Scan() {
+		linea = scanner.Text()
+		partes = strings.Split(linea, " ")
+		if partes[1] == nombreBase {
+			lineaCambiar = linea
+			break
+		}
+	}
+
+	file.Close()
+
+	//Reemplazamos linea
+	input, err := ioutil.ReadFile(nombreSector + ".txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output := bytes.Replace(input, []byte(lineaCambiar+"\n"), []byte(""), -1)
+
+	if err = ioutil.WriteFile(nombreSector+".txt", output, 0666); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func aplicarCambios(nombreArchivoLogs string, nuevoContenido string, cantidadInicial int) {

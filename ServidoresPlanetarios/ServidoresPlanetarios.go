@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
@@ -109,12 +110,27 @@ func (s *server) ActualizarValor(ctx context.Context, req *pb.Peticion) (*pb.Rel
 }
 
 func (s *server) BorrarBase(ctx context.Context, req *pb.Peticion) (*pb.Reloj, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BorrarBase not implemented")
-}
+	nombreSector := req.Base.Sector
+	nombreBase := req.Base.Nombre
 
-func (s *server) GetSoldados(ctx context.Context, req *pb.DatosBase) (*pb.SoldadosBase, error) {
+	borrarBase(nombreSector, nombreBase)
 
-	return nil, status.Errorf(codes.Unimplemented, "method GetSoldados not implemented")
+	file, err := os.OpenFile("LogRegistro.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644) //Abrimos el Log de registros para anadir el cambio
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//Guardamos la informacion en el Log
+	file.WriteString("BorrarBase " + nombreSector + " " + nombreBase + "\n")
+
+	//Cerramos el archivo
+	file.Close()
+
+	reloj[nroServidor] += 1
+
+	stringReloj := strconv.Itoa(reloj[0]) + "-" + strconv.Itoa(reloj[1]) + "-" + strconv.Itoa(reloj[2])
+
+	return &pb.Reloj{RelojServidor: stringReloj}, nil
 }
 
 func traducirReloj(reloj string) [3]int {
@@ -128,6 +144,36 @@ func traducirReloj(reloj string) [3]int {
 	}
 
 	return nuevoReloj
+}
+
+func (s *server) GetSoldados(ctx context.Context, req *pb.DatosBase) (*pb.SoldadosBase, error) {
+
+	var partes []string
+	var linea string
+	cantidadSoldados := -1
+
+	file, err := os.Open(req.Sector + ".txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	scanner := bufio.NewScanner(file)
+	//Buscar en el archivo linea a reemplazar
+	for scanner.Scan() {
+		linea = scanner.Text()
+		partes = strings.Split(linea, " ")
+		if partes[1] == req.Nombre {
+			cantidadSoldados, _ = strconv.Atoi(partes[2])
+			break
+		}
+	}
+
+	file.Close()
+	stringReloj := strconv.Itoa(reloj[0]) + "-" + strconv.Itoa(reloj[1]) + "-" + strconv.Itoa(reloj[2])
+
+	return &pb.SoldadosBase{CantidadSoldados: int32(cantidadSoldados),
+		RelojServidor:  stringReloj,
+		NombreServidor: strconv.Itoa(nroServidor)}, nil
 }
 
 func (s *server) IniciarMerge(context.Context, *pb.MensajeSimple) (*pb.MensajeSimple, error) {
@@ -196,7 +242,7 @@ func (s *server) Merge(ctx context.Context, req *pb.MensajeMerge) (*pb.MensajeMe
 		}
 		return &pb.MensajeMerge{RelojServidor: &pb.Reloj{RelojServidor: stringReloj}, Logs: string(contenido)}, nil
 
-	} else { // Si no los es, significa que se tiene que actualizar el propio Logs
+	} else { // Si no lo es, significa que se tiene que actualizar el propio Logs
 
 		//Calculamos cuantos logs inicialmente habia
 		cantidadInicialLogs := reloj[0] + reloj[1] + reloj[2]
@@ -218,8 +264,6 @@ func (s *server) Finalizar(ctx context.Context, req *pb.MensajeSimple) (*pb.Mens
 }
 
 func main() {
-
-	//FALTA IMPLEMENTAR BORRAR BASE
 
 	//Por mientras, dale el nroServidor a mano. 0: Tierra, 1: Titan, 2: Marte
 	//Copialo en diferentes carpetas y pruebalo.

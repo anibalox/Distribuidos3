@@ -3,6 +3,4 @@ AgregarBase Calama Base2 153300
 AgregarBase Copiapo Base1 17000
 RenombrarBase Copiapo Base1 NuevaCopiapoBase1
 ActualizarValor Calama Base1 50000
-AgregarBase Calama BaseNueva 1700
-RenombrarBase Copiapo NuevaCopiapoBase1 LaBaseCopiapo
-ActualizarValor Calama Base2 90
+BorrarBase Calama Base1

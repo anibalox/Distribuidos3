@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -89,15 +90,24 @@ func main() {
 	// 	&pb.Peticion{Base: &pb.DatosBase{Sector: "Calama", Nombre: "Base1"},
 	// 		Valor: "50000"})
 
-	// fmt.Println(res)
+	// res, err := serviceCliente.BorrarBase(context.Background(),
+	// 	&pb.Peticion{Base: &pb.DatosBase{Sector: "Calama", Nombre: "Base1"},
+	// 		Valor: ""})
 
-	defer connS.Close()
+	res, err := serviceCliente.GetSoldados(context.Background(),
+		&pb.DatosBase{Sector: "Calama", Nombre: "Base2"})
 
-	contenido, err := os.ReadFile("NewLogs.txt")
+	fmt.Println(res.CantidadSoldados)
+	fmt.Println(res.NombreServidor)
+	fmt.Println(res.RelojServidor)
 
-	serviceCliente.Merge(context.Background(), &pb.MensajeMerge{
-		RelojServidor: &pb.Reloj{RelojServidor: "3-5-0"},
-		Logs:          string(contenido),
-	})
+	connS.Close()
+
+	// contenido, err := os.ReadFile("NewLogs.txt")
+
+	// serviceCliente.Merge(context.Background(), &pb.MensajeMerge{
+	// 	RelojServidor: &pb.Reloj{RelojServidor: "3-5-0"},
+	// 	Logs:          string(contenido),
+	// })
 
 }
