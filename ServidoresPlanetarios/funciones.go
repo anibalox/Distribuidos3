@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -28,12 +29,13 @@ func agregarBase(nombreSector string, nombreBase string, cantidadSoldados string
 func renombrarBase(nombreSector string, nombreBase string, nuevoNombre string) {
 	var partes []string
 	var linea string
-	var lineaCambiar string
+	lineaCambiar := ""
 	var nuevaLinea string
 
 	file, err := os.Open(nombreSector + ".txt")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("No se encontro sector")
+		return
 	}
 
 	scanner := bufio.NewScanner(file)
@@ -49,6 +51,11 @@ func renombrarBase(nombreSector string, nombreBase string, nuevoNombre string) {
 	}
 
 	file.Close()
+
+	if lineaCambiar == "" {
+		fmt.Println("No se encontro base")
+		return
+	}
 
 	input, err := ioutil.ReadFile(nombreSector + ".txt")
 	if err != nil {
@@ -66,12 +73,13 @@ func renombrarBase(nombreSector string, nombreBase string, nuevoNombre string) {
 func actualizarValor(nombreSector string, nombreBase string, nuevoSoldados string) {
 	var partes []string
 	var linea string
-	var lineaCambiar string
+	lineaCambiar := ""
 	var nuevaLinea string
 
 	file, err := os.Open(nombreSector + ".txt")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("No se encontro sector")
+		return
 	}
 
 	scanner := bufio.NewScanner(file)
@@ -87,6 +95,11 @@ func actualizarValor(nombreSector string, nombreBase string, nuevoSoldados strin
 	}
 
 	file.Close()
+
+	if lineaCambiar == "" {
+		fmt.Println("No se encontro base")
+		return
+	}
 
 	//Reemplazamos linea
 	input, err := ioutil.ReadFile(nombreSector + ".txt")
@@ -105,11 +118,12 @@ func actualizarValor(nombreSector string, nombreBase string, nuevoSoldados strin
 func borrarBase(nombreSector string, nombreBase string) {
 	var partes []string
 	var linea string
-	var lineaCambiar string
+	lineaCambiar := ""
 
 	file, err := os.Open(nombreSector + ".txt")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("No se encontro sector")
+		return
 	}
 
 	scanner := bufio.NewScanner(file)
@@ -124,6 +138,11 @@ func borrarBase(nombreSector string, nombreBase string) {
 	}
 
 	file.Close()
+
+	if lineaCambiar == "" {
+		fmt.Println("No se encontro base")
+		return
+	}
 
 	//Reemplazamos linea
 	input, err := ioutil.ReadFile(nombreSector + ".txt")
